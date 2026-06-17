@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { createTicket } = require('../controllers/ticketController');
+const { createTicket, getTickets } = require('../controllers/ticketController'); // <-- Import getTickets
 
-// Map the POST method to our controller function
+// Map methods to our controller functions
 router.post('/', createTicket);
+router.get('/', getTickets); // <-- Add this GET endpoint listener
 
-// THIS LINE IS CRITICAL: It must export 'router' exactly like this!
 module.exports = router;

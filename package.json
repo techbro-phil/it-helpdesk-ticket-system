@@ -1,0 +1,27 @@
+{
+  "name": "it-helpdesk-ticketing-system",
+  "version": "1.0.0",
+  "description": "��I\u0000T\u0000 \u0000H\u0000e\u0000l\u0000p\u0000d\u0000e\u0000s\u0000k\u0000 \u0000T\u0000i\u0000c\u0000k\u0000e\u0000t\u0000 \u0000S\u0000y\u0000s\u0000t\u0000e\u0000m\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techbro-phil/it-helpdesk-ticket-system.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/techbro-phil/it-helpdesk-ticket-system/issues"
+  },
+  "homepage": "https://github.com/techbro-phil/it-helpdesk-ticket-system#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.21.0"
+  }
+}

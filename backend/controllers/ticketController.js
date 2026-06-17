@@ -4,14 +4,31 @@ const pool = require('../config/db');
 // @route   GET /tickets
 const getTickets = async (req, res) => {
   try {
-    // Run an SQL query to select all records from the tickets table ordered by newest first
     const result = await pool.query('SELECT * FROM tickets ORDER BY created_at DESC;');
-    
-    // Return the array of tickets to the client
     res.status(200).json(result.rows);
   } catch (err) {
     console.error('❌ Error fetching tickets:', err.message);
     res.status(500).json({ error: 'Server error retrieving tickets.' });
+  }
+};
+
+// @desc    Get a single ticket by ID
+// @route   GET /tickets/:id
+const getTicketById = async (req, res) => {
+  try {
+    const { id } = req.params; // <-- This grabs the ID number right out of the URL path!
+
+    const result = await pool.query('SELECT * FROM tickets WHERE id = $1;', [id]);
+
+    // If the database returns 0 rows, it means that ticket ID doesn't exist
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
+    }
+
+    res.status(200).json(result.rows[0]); // Return just the single ticket object
+  } catch (err) {
+    console.error('❌ Error fetching ticket by ID:', err.message);
+    res.status(500).json({ error: 'Server error retrieving ticket details.' });
   }
 };
 
@@ -43,8 +60,9 @@ const createTicket = async (req, res) => {
   }
 };
 
-// CRITICAL: Make sure BOTH functions are exported here!
+// CRITICAL: Export all three functions!
 module.exports = {
   getTickets,
+  getTicketById,
   createTicket
 };

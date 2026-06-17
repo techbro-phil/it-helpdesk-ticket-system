@@ -7,7 +7,7 @@ const getTickets = async (req, res) => {
     const result = await pool.query('SELECT * FROM tickets ORDER BY created_at DESC;');
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error('❌ Error fetching tickets:', err.message);
+    console.error(' Error fetching tickets:', err.message);
     res.status(500).json({ error: 'Server error retrieving tickets.' });
   }
 };
@@ -23,9 +23,9 @@ const getTicketById = async (req, res) => {
       return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
     }
 
-    res.status(200).json(result.rows[0]); // Return the single ticket object directly
+    res.status(200).json(result.rows);
   } catch (err) {
-    console.error('❌ Error fetching ticket by ID:', err.message);
+    console.error(' Error fetching ticket by ID:', err.message);
     res.status(500).json({ error: 'Server error retrieving ticket details.' });
   }
 };
@@ -49,11 +49,11 @@ const createTicket = async (req, res) => {
     const result = await pool.query(queryText, values);
     
     res.status(201).json({
-      message: '🎉 Ticket created successfully!',
-      ticket: result.rows[0]
+      message: ' Ticket created successfully!',
+      ticket: result.rows
     });
   } catch (err) {
-    console.error('❌ Error inserting ticket:', err.message);
+    console.error(' Error inserting ticket:', err.message);
     res.status(500).json({ error: 'Server error processing your ticket request.' });
   }
 };
@@ -65,13 +65,11 @@ const updateTicket = async (req, res) => {
     const { id } = req.params;
     const { subject, description, category, priority, status } = req.body;
 
-    // 1. Check if the ticket exists first
     const checkTicket = await pool.query('SELECT * FROM tickets WHERE id = $1;', [id]);
     if (checkTicket.rows.length === 0) {
       return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
     }
 
-    // 2. Build our update text. If fields are omitted in the request body, keep the original database values!
     const updatedSubject = subject || checkTicket.rows[0].subject;
     const updatedDescription = description || checkTicket.rows[0].description;
     const updatedCategory = category || checkTicket.rows[0].category;
@@ -89,7 +87,7 @@ const updateTicket = async (req, res) => {
 
     res.status(200).json({
       message: ' Ticket updated successfully!',
-      ticket: result.rows[0]
+      ticket: result.rows
     });
   } catch (err) {
     console.error(' Error updating ticket:', err.message);
@@ -97,10 +95,33 @@ const updateTicket = async (req, res) => {
   }
 };
 
-// CRITICAL: Export all four functions!
+// @desc    Delete a ticket permanently
+// @route   DELETE /tickets/:id
+const deleteTicket = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Check if the target ticket actually exists first
+    const checkTicket = await pool.query('SELECT * FROM tickets WHERE id = $1;', [id]);
+    if (checkTicket.rows.length === 0) {
+      return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
+    }
+
+    // 2. Perform the database deletion
+    await pool.query('DELETE FROM tickets WHERE id = $1;', [id]);
+
+    res.status(200).json({ message: ` Ticket with ID ${id} has been permanently deleted.` });
+  } catch (err) {
+    console.error(' Error deleting ticket:', err.message);
+    res.status(500).json({ error: 'Server error executing data deletion.' });
+  }
+};
+
+// CRITICAL: Export all five functions!
 module.exports = {
   getTickets,
   getTicketById,
   createTicket,
-  updateTicket
+  updateTicket,
+  deleteTicket
 };

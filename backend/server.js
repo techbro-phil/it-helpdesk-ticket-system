@@ -1,14 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./config/db');
+const ticketRoutes = require('./routes/ticketRoutes'); // <-- 1. Import your routes
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Routes Linking
+app.use('/tickets', ticketRoutes); // <-- 2. Mount your tickets endpoint
+
+// Database Initialization Script
 const initDatabase = async () => {
   const createTablesQuery = `
     CREATE TABLE IF NOT EXISTS users (
@@ -49,6 +55,7 @@ const initDatabase = async () => {
   }
 };
 
+// Start Runtime
 app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
   await initDatabase();

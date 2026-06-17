@@ -1,18 +1,55 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
+const pool = require('./config/db');
+require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.send({
-        message: "IT Helpdesk API is running"
-    });
-});
+const initDatabase = async () => {
+  const createTablesQuery = `
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(100) UNIQUE NOT NULL,
+      role VARCHAR(20) DEFAULT 'user',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    CREATE TABLE IF NOT EXISTS tickets (
+      id SERIAL PRIMARY KEY,
+      subject VARCHAR(255) NOT NULL,
+      description TEXT NOT NULL,
+      category VARCHAR(50) NOT NULL,
+      priority VARCHAR(20) NOT NULL,
+      status VARCHAR(20) DEFAULT 'Open',
+      user_id INT REFERENCES users(id) ON DELETE SET NULL,
+      assigned_to INT REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS notes (
+      id SERIAL PRIMARY KEY,
+      ticket_id INT REFERENCES tickets(id) ON DELETE CASCADE,
+      technician_id INT REFERENCES users(id) ON DELETE SET NULL,
+      note TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  try {
+    await pool.query(createTablesQuery);
+    console.log('📋 Database tables verified & initialized successfully!');
+  } catch (err) {
+    console.error('❌ Error building database schemas:', err.message);
+  }
+};
+
+app.listen(PORT, async () => {
+  console.log(`Server is running on port ${PORT}`);
+  await initDatabase();
 });

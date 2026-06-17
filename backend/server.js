@@ -3,6 +3,7 @@ const cors = require('cors');
 const pool = require('./config/db');
 const ticketRoutes = require('./routes/ticketRoutes'); // <-- 1. Import your routes
 require('dotenv').config();
+const noteRoutes = require('./routes/noteRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,8 @@ app.use(express.json());
 
 // Routes Linking
 app.use('/tickets', ticketRoutes); // <-- 2. Mount your tickets endpoint
+app.use('/notes', noteRoutes);
+
 
 // Database Initialization Script
 const initDatabase = async () => {
@@ -49,9 +52,9 @@ const initDatabase = async () => {
 
   try {
     await pool.query(createTablesQuery);
-    console.log('📋 Database tables verified & initialized successfully!');
+    console.log(' Database tables verified & initialized successfully!');
   } catch (err) {
-    console.error('❌ Error building database schemas:', err.message);
+    console.error(' Error building database schemas:', err.message);
   }
 };
 

@@ -4,7 +4,7 @@ import axios from 'axios'; // For pulling notes directly
 import DashboardMetrics from '../components/DashboardMetrics';
 
 
-const TicketList = () => {
+const TicketList = ({ currentUser }) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -122,11 +122,19 @@ const TicketList = () => {
               <tbody>
                 {tickets.map((ticket, index) => (
                   <tr key={ticket.id} style={{ borderBottom: '1px solid #edf2f7', backgroundColor: index % 2 === 0 ? '#ffffff' : '#fcfdfe' }}>
-                    <td style={{ padding: '14px', fontWeight: '600', color: '#a0aec0' }}>#{ticket.id}</td>
-                    <td style={{ padding: '14px', fontWeight: '500', color: '#2d3748' }}>{ticket.subject}</td>
                     <td style={{ padding: '14px' }}>
-                      <span style={{ backgroundColor: '#edf2f7', color: '#4a5568', padding: '4px 8px', borderRadius: '6px', fontSize: '12px' }}>{ticket.category}</span>
+                     <button onClick={() => handleViewDetails(ticket)} style={{ background: '#3182ce', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', fontSize: '12px', fontWeight: '600' }}>
+                    View Details
+                   </button>
+  
+                   {/* ONLY ADMINS CAN SEE AND CLICK THE DELETE BUTTON */}
+                   {currentUser?.role === 'admin' && (
+               <button onClick={() => handleDelete(ticket.id)} style={{ background: '#e53e3e', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                 Delete
+               </button>
+                  )}
                     </td>
+
                     <td style={{ padding: '14px' }}>
                       <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', ...getPriorityStyle(ticket.priority) }}>{ticket.priority}</span>
                     </td>
@@ -177,19 +185,27 @@ const TicketList = () => {
           </div>
 
           {/* ADD NOTE FORM INPUT */}
-          <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '10px' }}>
-            <input 
-              type="text" 
-              value={newNote} 
-              onChange={(e) => setNewNote(e.target.value)} 
-              placeholder="Add technician patch notes or troubleshooting status updates here..." 
-              style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e0', borderRadius: '6px', outline: 'none' }}
-              required 
-            />
-            <button type="submit" style={{ background: '#2d3748', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-              Add Log Note
-            </button>
-          </form>
+         {/* ONLY TECHNICIANS & ADMINS CAN SUBMIT PATCH NOTES */}
+{(currentUser?.role === 'technician' || currentUser?.role === 'admin') ? (
+  <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '10px' }}>
+    <input 
+      type="text" 
+      value={newNote} 
+      onChange={(e) => setNewNote(e.target.value)} 
+      placeholder="Add technician patch notes or troubleshooting status updates here..." 
+      style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e0', borderRadius: '6px', outline: 'none' }}
+      required 
+    />
+    <button type="submit" style={{ background: '#2d3748', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+      Add Log Note
+    </button>
+  </form>
+) : (
+  <p style={{ color: '#718096', fontSize: '14px', fontStyle: 'italic', backgroundColor: '#f7fafc', padding: '12px', borderRadius: '6px', border: '1px dashed #cbd5e0', margin: 0 }}>
+    🔒 Standard user accounts do not have engineering clearance to modify internal technical work logs.
+  </p>
+)}
+
         </div>
       )}
 

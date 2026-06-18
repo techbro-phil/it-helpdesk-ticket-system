@@ -4,6 +4,8 @@ const pool = require('./config/db');
 const ticketRoutes = require('./routes/ticketRoutes'); // <-- 1. Import your routes
 require('dotenv').config();
 const noteRoutes = require('./routes/noteRoutes');
+const authRoutes = require('./routes/authRoutes'); // <-- Add this line
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,7 +17,7 @@ app.use(express.json());
 // Routes Linking
 app.use('/tickets', ticketRoutes); // <-- 2. Mount your tickets endpoint
 app.use('/notes', noteRoutes);
-
+app.use('/auth', authRoutes); // <-- 3. Mount your authentication endpoint
 
 // Database Initialization Script
 const initDatabase = async () => {
@@ -24,6 +26,7 @@ const initDatabase = async () => {
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       email VARCHAR(100) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL, -- <-- Make sure this line is added!
       role VARCHAR(20) DEFAULT 'user',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );

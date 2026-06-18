@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAllTickets, deleteTicketById, fetchTicketById } from '../services/api';
 import axios from 'axios'; // For pulling notes directly
+import DashboardMetrics from '../components/DashboardMetrics';
+
 
 const TicketList = () => {
   const [tickets, setTickets] = useState([]);
@@ -90,6 +92,9 @@ const TicketList = () => {
   return (
     <div style={{ maxWidth: '1000px', margin: '20px auto 40px auto', fontFamily: 'Arial, sans-serif' }}>
       
+      {/* Inject Analytics Counter Cards Here */}
+    <DashboardMetrics tickets={tickets} />
+    
       {/* SECTION A: THE LIVE OPERATIONS QUEUE TABLE */}
       <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #f4f6f9', paddingBottom: '12px' }}>

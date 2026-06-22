@@ -26,22 +26,22 @@ function App() {
 
   if (loading) return <p style={{ textAlign: 'center', marginTop: '50px' }}>⏳ Verifying system session...</p>;
 
-  // GUARD PANEL: Router for Unauthenticated Users
+    // GUARD PANEL: Router for Unauthenticated Users
   if (!currentUser) {
     if (showLogin) {
-      // If the user clicked "Sign In", open the Auth form panel
       return (
         <Auth 
           onLoginSuccess={(user) => { 
             setCurrentUser(user); 
             setShowLogin(false); 
           }} 
+          onCancelAuth={() => setShowLogin(false)} // <-- ADD THIS EXACT LINE
         />
       );
     }
-    // By default, render the beautiful full-screen public Landing page!
     return <Landing onNavigateToLogin={() => setShowLogin(true)} />;
   }
+
 
   // PORTAL PANEL: Unlocked Dashboard workspace for authenticated Users/Techs/Admins
   return (

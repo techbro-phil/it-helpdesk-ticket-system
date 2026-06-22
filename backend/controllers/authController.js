@@ -22,8 +22,8 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 3. Save user to database (Default role to 'user' if not specified)
-    const userRole = role || 'user';
+    // Security Lockdown: Public registrations are strictly forced to 'user' tier status.
+    const userRole = 'user';
     const queryText = `
       INSERT INTO users (name, email, password, role)
       VALUES ($1, $2, $3, $4)

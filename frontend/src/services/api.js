@@ -6,7 +6,7 @@ const API = axios.create({
 });
 
 // Reusable functions matching your backend endpoints
-export const fetchAllTickets = () => API.get('/tickets');
+export const fetchAllTickets = (userId, role) => API.get(`/tickets?user_id=${userId}&role=${role}`);
 export const fetchTicketById = (id) => API.get(`/tickets/${id}`);
 export const createNewTicket = (ticketData) => API.post('/tickets', ticketData);
 export const updateTicketDetails = (id, updatedData) => API.put(`/tickets/${id}`, updatedData);

@@ -14,10 +14,11 @@ const TicketList = ({ currentUser }) => {
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState('');
 
-  // 1. Load the Dashboard Queue
+    // Load the Dashboard Queue with explicit permission restrictions context
   const loadTickets = async () => {
     try {
-      const response = await fetchAllTickets();
+      // Feed the logged-in user's metadata variables directly into our API fetcher tool
+      const response = await fetchAllTickets(currentUser.id, currentUser.role);
       setTickets(response.data);
     } catch (err) {
       setError('Failed to load tickets from the data engine.');
@@ -25,6 +26,7 @@ const TicketList = ({ currentUser }) => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     loadTickets();

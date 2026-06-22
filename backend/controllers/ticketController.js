@@ -1,13 +1,27 @@
 const pool = require('../config/db');
 
-// @desc    Get all helpdesk tickets
+// @desc    Get helpdesk tickets (Filtered by permission role)
 // @route   GET /tickets
 const getTickets = async (req, res) => {
+  const { user_id, role } = req.query; 
+
   try {
-    const result = await pool.query('SELECT * FROM tickets ORDER BY created_at DESC;');
+    let result;
+
+    if (role === 'technician' || role === 'admin') {
+      // Technicians and Administrators fetch the complete global corporate queue
+      result = await pool.query('SELECT * FROM tickets ORDER BY created_at DESC;');
+    } else {
+      // Standard Users are strictly isolated to queries matching their personal user_id
+      if (!user_id) {
+        return res.status(400).json({ error: 'User identifier required to fetch data.' });
+      }
+      result = await pool.query('SELECT * FROM tickets WHERE user_id = $1 ORDER BY created_at DESC;', [user_id]);
+    }
+    
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error(' Error fetching tickets:', err.message);
+    console.error('Error fetching tickets:', err.message);
     res.status(500).json({ error: 'Server error retrieving tickets.' });
   }
 };
@@ -25,7 +39,7 @@ const getTicketById = async (req, res) => {
 
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error(' Error fetching ticket by ID:', err.message);
+    console.error('Error fetching ticket by ID:', err.message);
     res.status(500).json({ error: 'Server error retrieving ticket details.' });
   }
 };
@@ -33,7 +47,7 @@ const getTicketById = async (req, res) => {
 // @desc    Create a new helpdesk ticket
 // @route   POST /tickets
 const createTicket = async (req, res) => {
-  const { subject, description, category, priority } = req.body;
+  const { subject, description, category, priority, user_id } = req.body;
 
   if (!subject || !description || !category || !priority) {
     return res.status(400).json({ error: 'Please provide all required fields.' });
@@ -41,19 +55,19 @@ const createTicket = async (req, res) => {
 
   try {
     const queryText = `
-      INSERT INTO tickets (subject, description, category, priority, status)
-      VALUES ($1, $2, $3, $4, 'Open')
+      INSERT INTO tickets (subject, description, category, priority, status, user_id)
+      VALUES ($1, $2, $3, $4, 'Open', $5)
       RETURNING *;
     `;
-    const values = [subject, description, category, priority];
+    const values = [subject, description, category, priority, user_id || null];
     const result = await pool.query(queryText, values);
     
     res.status(201).json({
-      message: ' Ticket created successfully!',
+      message: 'Ticket created successfully.',
       ticket: result.rows
     });
   } catch (err) {
-    console.error(' Error inserting ticket:', err.message);
+    console.error('Error inserting ticket:', err.message);
     res.status(500).json({ error: 'Server error processing your ticket request.' });
   }
 };
@@ -86,11 +100,11 @@ const updateTicket = async (req, res) => {
     const result = await pool.query(updateQuery, values);
 
     res.status(200).json({
-      message: ' Ticket updated successfully!',
+      message: 'Ticket updated successfully.',
       ticket: result.rows
     });
   } catch (err) {
-    console.error(' Error updating ticket:', err.message);
+    console.error('Error updating ticket:', err.message);
     res.status(500).json({ error: 'Server error updating ticket data.' });
   }
 };
@@ -101,23 +115,22 @@ const deleteTicket = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Check if the target ticket actually exists first
+    // Check if the target ticket actually exists first
     const checkTicket = await pool.query('SELECT * FROM tickets WHERE id = $1;', [id]);
     if (checkTicket.rows.length === 0) {
       return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
     }
 
-    // 2. Perform the database deletion
+    // Perform the database deletion
     await pool.query('DELETE FROM tickets WHERE id = $1;', [id]);
 
-    res.status(200).json({ message: ` Ticket with ID ${id} has been permanently deleted.` });
+    res.status(200).json({ message: `Ticket with ID ${id} has been permanently deleted.` });
   } catch (err) {
-    console.error(' Error deleting ticket:', err.message);
+    console.error('Error deleting ticket:', err.message);
     res.status(500).json({ error: 'Server error executing data deletion.' });
   }
 };
 
-// CRITICAL: Export all five functions!
 module.exports = {
   getTickets,
   getTicketById,

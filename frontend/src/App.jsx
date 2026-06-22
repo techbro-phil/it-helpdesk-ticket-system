@@ -121,29 +121,20 @@ function App() {
 
         {/* MAIN ROUTED VIEW WORKSPACE LAYOUT */}
         <main className="flex-1 p-8 max-w-7xl w-full mx-auto">
-          {activeTab === 'New Ticket' ? (
-            <div className="max-w-2xl mx-auto pt-6">
-              <CreateTicket />
-            </div>
-          ) : activeTab === 'Manage Users' ? (
-            // 3. Render the User Management component if the Admin clicked the tab
-            <UserManagement />
-          ) : (
-            // Default view: Show the Ticket tracking systems or standard greetings block
-            <div className="space-y-8">
-              {(currentUser.role === 'technician' || currentUser.role === 'admin') ? (
-                <TicketList currentUser={currentUser} />
-              ) : (
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-md text-center max-w-2xl mx-auto space-y-4">
-                  <h3 className="text-xl font-bold text-slate-900">Welcome to HelpDeskPro Portal</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Your account is registered as a standard corporate user profile. Use the left sidebar to navigate to <strong>File New Ticket</strong> to submit an issue report directly to our network engineering operators group.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </main>
+  {activeTab === 'New Ticket' ? (
+    <div className="max-w-2xl mx-auto pt-6">
+      <CreateTicket />
+    </div>
+  ) : activeTab === 'Manage Users' ? (
+    <UserManagement />
+  ) : (
+    <div className="space-y-8">
+      {/* Unlocked for everyone! The backend will safely filter row views automatically */}
+      <TicketList currentUser={currentUser} />
+    </div>
+  )}
+</main>
+
 
       </div>
 

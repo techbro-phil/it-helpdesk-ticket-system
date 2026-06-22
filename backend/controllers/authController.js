@@ -80,3 +80,53 @@ const loginUser = async (req, res) => {
 };
 
 module.exports = { registerUser, loginUser };
+
+// @desc    Get all registered corporate users
+// @route   GET /auth/users
+const getAllUsers = async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, name, email, role, created_at FROM users ORDER BY id ASC;');
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('❌ Error retrieving users:', err.message);
+    res.status(500).json({ error: 'Server error retrieving corporate directories.' });
+  }
+};
+
+// @desc    Update a user's role assignment classification
+// @route   PUT /auth/users/:id/role
+const updateUserRole = async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  // Validate that the role matches our explicit system structures
+  if (!['user', 'technician', 'admin'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid classification assignment.' });
+  }
+
+  try {
+    const userCheck = await pool.query('SELECT * FROM users WHERE id = $1;', [id]);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: `User with ID ${id} does not exist.` });
+    }
+
+    const updateQuery = 'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, role;';
+    const result = await pool.query(updateQuery, [role, id]);
+
+    res.status(200).json({
+      message: '🔄 User operational clearance level upgraded successfully!',
+      user: result.rows[0]
+    });
+  } catch (err) {
+    console.error('❌ Error updating role:', err.message);
+    res.status(500).json({ error: 'Server error applying role configuration updates.' });
+  }
+};
+
+// CRITICAL: Update your export block at the bottom to include these new tools!
+module.exports = {
+  registerUser,
+  loginUser,
+  getAllUsers, // <-- Add this
+  updateUserRole // <-- Add this
+};

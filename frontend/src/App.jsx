@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import CreateTicket from './pages/CreateTicket';
 import TicketList from './pages/TicketList';
 import Auth from './pages/Auth';
+import Landing from './pages/Landing'; // <-- 1. Verify this import is exactly here
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false); // <-- 2. Tracks whether we show Login or Landing
 
   // Check if a valid session exists when the browser window first boots up
   useEffect(() => {
@@ -24,34 +26,50 @@ function App() {
 
   if (loading) return <p style={{ textAlign: 'center', marginTop: '50px' }}>⏳ Verifying system session...</p>;
 
-  // GUARD: If no active user profile is found in memory, block layout and show Auth view
+  // GUARD PANEL: Router for Unauthenticated Users
   if (!currentUser) {
-    return <Auth onLoginSuccess={(user) => setCurrentUser(user)} />;
+    if (showLogin) {
+      // If the user clicked "Sign In", open the Auth form panel
+      return (
+        <Auth 
+          onLoginSuccess={(user) => { 
+            setCurrentUser(user); 
+            setShowLogin(false); 
+          }} 
+        />
+      );
+    }
+    // By default, render the beautiful full-screen public Landing page!
+    return <Landing onNavigateToLogin={() => setShowLogin(true)} />;
   }
 
+  // PORTAL PANEL: Unlocked Dashboard workspace for authenticated Users/Techs/Admins
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', backgroundColor: '#fcfcfc', minHeight: '100vh' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '15px', marginBottom: '30px', maxWidth: '1000px', margin: '0 auto 30px auto' }}>
-        <h1 style={{ color: '#333', margin: 0, fontSize: '24px' }}>编️ IT Helpdesk Operations Workspace</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <span style={{ fontSize: '14px', color: '#4a5568', backgroundColor: '#edf2f7', padding: '6px 12px', borderRadius: '20px', fontWeight: '500' }}>
+    <div className="w-full min-h-screen bg-[#F8FAFC] font-sans antialiased text-[#1E293B] p-6">
+      <header className="max-w-7xl mx-auto flex justify-between items-center border-b border-slate-200 pb-5 mb-8">
+        <h1 className="text-2xl font-black text-slate-800 tracking-tight">🛠️ IT Helpdesk Operations Workspace</h1>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-full border border-slate-200">
             👤 {currentUser.name} ({currentUser.role})
           </span>
-          <button onClick={handleLogout} style={{ backgroundColor: '#e53e3e', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
+          <button 
+            onClick={handleLogout} 
+            className="bg-[#EF4444] hover:bg-red-600 text-white font-bold text-sm px-4 py-2 rounded-xl transition-all active:scale-95 shadow-sm"
+          >
             Sign Out
           </button>
         </div>
       </header>
       
-        <main style={{ marginTop: '20px' }}>
-          {/* Everyone can file a ticket */}
-         <CreateTicket />
-  
-         {/* ROLE CHECK: Only Technicians and Admins can see the global operational dashboard grid */}
-         {(currentUser.role === 'technician' || currentUser.role === 'admin') && (
-           <TicketList currentUser={currentUser} />
-  )}
-         </main>
+      <main className="max-w-7xl mx-auto space-y-12">
+        {/* Everyone can file a support ticket input */}
+        <CreateTicket />
+        
+        {/* ROLE CHECK: Only Technicians and Admins can view metrics cards and operations data grids */}
+        {(currentUser.role === 'technician' || currentUser.role === 'admin') && (
+          <TicketList currentUser={currentUser} />
+        )}
+      </main>
     </div>
   );
 }

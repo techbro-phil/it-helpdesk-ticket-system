@@ -57,7 +57,8 @@ function App() {
         {/* Sidebar Header Brand title */}
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-lg">H</div>
-          <span className="text-xl font-black text-white tracking-tight">HelpDesk<span className="text-blue-500">Pro</span></span>
+          <span className="text-xl font-bold text-white tracking-tight">HelpDesk<span className="text-blue-500">Pro</span></span>
+
         </div>
 
         {/* Sidebar Links Menu lists mapping */}
@@ -90,11 +91,12 @@ function App() {
         {/* Sidebar Footer Logout action area */}
         <div className="p-4 border-t border-slate-800">
           <button 
-            onClick={handleLogout}
-            className="w-full text-left px-4 py-3 rounded-xl font-semibold text-sm text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
-          >
-            Sign Out Session
-          </button>
+  onClick={handleLogout}
+  className="w-full text-left px-4 py-3 rounded-xl font-semibold text-sm text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
+>
+  Terminate Session
+</button>
+
         </div>
       </aside>
 
@@ -105,7 +107,8 @@ function App() {
         
         {/* TOP NAVBAR HEADER COMPONENT */}
         <header className="sticky top-0 z-10 w-full h-20 bg-white border-b border-slate-200 px-8 flex justify-between items-center shadow-sm">
-          <h1 className="text-xl font-black text-slate-800 tracking-tight">IT Helpdesk Operations Workspace</h1>
+  <h1 className="text-xl font-bold text-slate-800 tracking-tight">IT Service Management Console</h1>
+
           
           {/* Core account metadata user capsule badge */}
           <div className="flex items-center gap-3">

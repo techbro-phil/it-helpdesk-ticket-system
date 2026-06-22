@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Clean state-tracking clock utility to animate integers counting upwards
 const AnimatedCounter = ({ to }) => {
@@ -27,11 +27,9 @@ const AnimatedCounter = ({ to }) => {
 };
 
 const Landing = ({ onNavigateToLogin }) => {
-  const { scrollY } = useScroll();
+  useState(0); // kept as-is (even though it's doing nothing, like most corporate tools)
 
-  // Dynamic values that slide vector graphic overlays depending on scroll position
-  const y1 = useTransform(scrollY, [0, 500], [0, 80]);
-  const y2 = useTransform(scrollY, [0, 500], [0, -60]);
+  const [activeModal, setActiveModal] = useState(null);
 
   const fadeIn = {
     hidden: { opacity: 0, y: 30 },
@@ -42,40 +40,45 @@ const Landing = ({ onNavigateToLogin }) => {
     hover: { y: -10, scale: 1.03, transition: { duration: 0.3 } }
   };
 
+  const modalContent = {
+    Terms: {
+      title: "Terms of Service",
+      text: "Welcome to HelpDeskPro. By accessing our incident tracking infrastructure, you agree to comply with corporate data compliance regulations. Unauthorized attempts to override access tiers, brute-force API tokens, or compromise backend PostgreSQL storage tables will result in immediate profile suspension and termination of organizational clearance handles."
+    },
+    Privacy: {
+      title: "Privacy Policy",
+      text: "HelpDeskPro handles user data protection with absolute confidentiality. Corporate emails, profile roles, and technical log arrays are securely stored using cryptographic bcrypt hashing layers. We never exchange or stream internal operational logs to outside data networks. Session variables are recorded strictly inside temporary localStorage caches."
+    },
+    Support: {
+      title: "Customer Support Desk",
+      text: "Need administrative account clearance issues resolved? If you cannot access your portal workspace dashboard, find your network profile locked out, or need your role permissions upgraded to Technician or Admin status, please submit a physical report request form directly to our Global IT Administration office at support@helpdeskpro.com."
+    }
+  };
+
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-[#F8FAFC] via-white to-[#EEF2FF] text-[#0F172A] font-sans antialiased">
 
-      {/* BACKGROUND GRAPHIC BLOBS */}
-      <motion.div
-        style={{ y: y1 }}
-        className="absolute w-[500px] h-[500px] bg-blue-300/30 blur-3xl rounded-full top-[-100px] left-[-120px] pointer-events-none"
-      />
-      <motion.div
-        style={{ y: y2 }}
-        className="absolute w-[600px] h-[600px] bg-indigo-300/30 blur-3xl rounded-full bottom-[-150px] right-[-120px] pointer-events-none"
-      />
-
-      {/* 1. TOP NAVBAR PANEL */}
-      <nav className="fixed top-0 w-full z-50 backdrop-blur-xl bg-white/70 border-b border-slate-200/50 px-6 py-4">
+      {/* NAVBAR */}
+      <nav className="fixed top-0 w-full z-40 backdrop-blur-xl bg-white/70 border-b border-slate-200/50 px-6 py-4">
         <div className="max-w-[1440px] mx-auto px-4 flex justify-between items-center">
           <div className="text-2xl font-black tracking-tight">
             HelpDesk<span className="text-indigo-600">Pro</span>
           </div>
 
           <button
-            onClick={onNavigateToLogin}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-indigo-500/10 hover:scale-105 active:scale-95"
-          >
-            Enter System
-          </button>
+  onClick={onNavigateToLogin}
+  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-indigo-500/10 hover:scale-105 active:scale-95"
+>
+  Access Portal
+</button>
+
         </div>
       </nav>
 
-      {/* 2. HERO SPLIT CONTAINER */}
+      {/* HERO */}
       <header className="pt-40 pb-24 px-6 relative z-10 w-full max-w-[1440px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-          {/* Left Text Block */}
           <motion.div initial="hidden" animate="visible" variants={fadeIn} className="space-y-6">
             <span className="inline-block text-xs font-bold px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full text-blue-600 tracking-wide uppercase">
               Live Incident Management System
@@ -93,24 +96,23 @@ const Landing = ({ onNavigateToLogin }) => {
             </p>
 
             <div className="flex gap-4 flex-wrap pt-2">
-              <button
-                onClick={onNavigateToLogin}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all active:scale-95"
-              >
-                Open Dashboard
-              </button>
+  <button
+    onClick={onNavigateToLogin}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all active:scale-95"
+  >
+    Launch Dashboard
+  </button>
 
-              {/* FIXED ACTION LINK: WIRED DIRECTLY TO THE AUTH HOOK */}
-              <button 
-                onClick={onNavigateToLogin}
-                className="border border-slate-200 bg-white/50 text-slate-700 px-8 py-3.5 rounded-xl font-bold hover:bg-slate-50 transition-all active:scale-95"
-              >
-                Create Ticket
-              </button>
-            </div>
+  <button 
+    onClick={onNavigateToLogin}
+    className="border border-slate-200 bg-white text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 hover:bg-slate-50 active:scale-95"
+  >
+    File Support Request
+  </button>
+</div>
+
           </motion.div>
 
-          {/* Right Visual Simulation Box */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -126,24 +128,21 @@ const Landing = ({ onNavigateToLogin }) => {
             <div className="p-6 space-y-5 font-mono text-sm text-white">
               <p className="text-emerald-400 font-bold">// system operational</p>
 
-              {/* Data Rows Array Mapping simulation */}
-              <div className="space-y-3">
-                {[
-                  ["#INC-2401", "Network outage detected", "CRITICAL"],
-                  ["#INC-2402", "Printer queue stuck", "MEDIUM"],
-                  ["#INC-2403", "Password reset request", "LOW"]
-                ].map(([id, text, level]) => (
-                  <div key={id} className="bg-white text-slate-900 rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] shadow-sm">
-                    <div className="flex justify-between font-bold">
-                      <span className="text-slate-500">{id}</span>
-                      <span className={level === "CRITICAL" ? "text-red-500" : "text-yellow-500"}>
-                        {level}
-                      </span>
-                    </div>
-                    <p className="text-sm mt-1 font-sans font-medium text-slate-800">{text}</p>
+              {[
+                ["#INC-2401", "Network outage detected", "CRITICAL"],
+                ["#INC-2402", "Printer queue stuck", "MEDIUM"],
+                ["#INC-2403", "Password reset request", "LOW"]
+              ].map(([id, text, level]) => (
+                <div key={id} className="bg-white text-slate-900 rounded-xl p-4 hover:scale-[1.02] transition-all shadow-sm">
+                  <div className="flex justify-between font-bold">
+                    <span className="text-slate-500">{id}</span>
+                    <span className={level === "CRITICAL" ? "text-red-500" : "text-yellow-500"}>
+                      {level}
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm mt-1 font-sans font-medium text-slate-800">{text}</p>
+                </div>
+              ))}
 
               <p className="text-slate-400 font-bold">// awaiting technician allocation...</p>
             </div>
@@ -151,34 +150,34 @@ const Landing = ({ onNavigateToLogin }) => {
         </div>
       </header>
 
-      {/* 3. ANIMATED COUNTER STATISTICS SECTION */}
+      {/* COUNTERS */}
       <section className="px-6 py-20 relative z-10 w-full max-w-[1440px] mx-auto border-t border-b border-slate-200/60 bg-white/30 backdrop-blur-sm rounded-3xl">
         <div className="grid md:grid-cols-3 gap-12 text-center">
-          <div className="space-y-1">
+          <div>
             <p className="text-6xl font-black text-blue-600">
               <AnimatedCounter to={500} />+
             </p>
             <p className="text-slate-700 font-bold text-lg">Incidents Resolved</p>
           </div>
 
-          <div className="space-y-1">
+          <div>
             <p className="text-6xl font-black text-indigo-600">
               <AnimatedCounter to={95} />%
             </p>
             <p className="text-slate-700 font-bold text-lg">SLA Compliance</p>
           </div>
 
-          <div className="space-y-1">
+          <div>
             <p className="text-6xl font-black text-slate-900">24/7</p>
             <p className="text-slate-700 font-bold text-lg">System Availability</p>
           </div>
         </div>
       </section>
 
-      {/* 4. THREE-COLUMN FEATURES MATRIX GRID */}
+      {/* FEATURES */}
       <section className="px-6 py-28 relative z-10 w-full max-w-[1440px] mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black tracking-tight text-slate-900">Everything structured. Nothing chaotic.</h2>
+          <h2 className="text-4xl font-black text-slate-900">Everything structured. Nothing chaotic.</h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -191,34 +190,58 @@ const Landing = ({ onNavigateToLogin }) => {
               key={t}
               whileHover="hover"
               variants={cardHover}
-              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all duration-300"
+              className="bg-white p-8 rounded-2xl border border-slate-200 shadow-md"
             >
-              <h3 className="font-bold text-xl text-slate-900 mb-2">{t}</h3>
-              <p className="text-slate-600 leading-relaxed text-sm">{d}</p>
+              <h3 className="font-bold text-xl mb-2">{t}</h3>
+              <p className="text-slate-600 text-sm">{d}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* 5. FOOTER COMPONENT */}
+      {/* FOOTER */}
       <footer className="bg-slate-950 text-slate-400 py-16 px-8 relative z-10 w-full">
         <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-white text-2xl font-black tracking-tight">
+          <div className="text-white text-2xl font-black">
             HelpDesk<span className="text-indigo-500">Pro</span>
           </div>
 
-          <div className="flex gap-8 text-sm font-medium">
-            <span className="hover:text-white transition-colors cursor-pointer">Terms</span>
-            <span className="hover:text-white transition-colors cursor-pointer">Privacy</span>
-            <span className="hover:text-white transition-colors cursor-pointer">Support</span>
+          <div className="flex gap-6 text-sm">
+            <span onClick={() => setActiveModal("Terms")} className="cursor-pointer hover:text-white">Terms</span>
+            <span onClick={() => setActiveModal("Privacy")} className="cursor-pointer hover:text-white">Privacy</span>
+            <span onClick={() => setActiveModal("Support")} className="cursor-pointer hover:text-white">Support</span>
           </div>
+
+          <p>© 2026 HelpDeskPro Systems. All rights secured.</p>
         </div>
 
-        <div className="text-center mt-12 text-xs text-slate-600 border-t border-slate-900 pt-6">
-          &copy; 2026 HelpDeskPro Systems. All rights secured.
-        </div>
+        <AnimatePresence>
+          {activeModal && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="fixed inset-0 flex items-center justify-center bg-black/50 p-6"
+            >
+              <div className="w-full max-w-lg bg-white p-8 rounded-2xl">
+                <h2 className="text-xl font-bold mb-4">
+                  {modalContent[activeModal].title}
+                </h2>
+                <p className="text-slate-600 mb-6">
+                  {modalContent[activeModal].text}
+                </p>
+
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="w-full bg-slate-900 text-white py-2 rounded-xl"
+                >
+                  Close Panel
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </footer>
-
     </div>
   );
 };

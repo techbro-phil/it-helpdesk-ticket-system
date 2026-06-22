@@ -37,7 +37,7 @@ const getTicketById = async (req, res) => {
       return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
     }
 
-    res.status(200).json(result.rows);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching ticket by ID:', err.message);
     res.status(500).json({ error: 'Server error retrieving ticket details.' });
@@ -64,7 +64,7 @@ const createTicket = async (req, res) => {
     
     res.status(201).json({
       message: 'Ticket created successfully.',
-      ticket: result.rows
+      ticket: result.rows[0]
     });
   } catch (err) {
     console.error('Error inserting ticket:', err.message);
@@ -72,56 +72,77 @@ const createTicket = async (req, res) => {
   }
 };
 
-// @desc    Update an existing ticket's details/status
+// @desc    Update ticket parameters or reassign ownership
 // @route   PUT /tickets/:id
 const updateTicket = async (req, res) => {
   try {
     const { id } = req.params;
-    const { subject, description, category, priority, status } = req.body;
+    const { subject, description, category, priority, status, assigned_to } = req.body;
 
+    // 1. Verify target ticket exists
     const checkTicket = await pool.query('SELECT * FROM tickets WHERE id = $1;', [id]);
     if (checkTicket.rows.length === 0) {
       return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
     }
 
+    // 2. Coalesce values: use incoming body payload values or fall back onto database defaults
     const updatedSubject = subject || checkTicket.rows[0].subject;
     const updatedDescription = description || checkTicket.rows[0].description;
     const updatedCategory = category || checkTicket.rows[0].category;
     const updatedPriority = priority || checkTicket.rows[0].priority;
     const updatedStatus = status || checkTicket.rows[0].status;
+    const updatedAssigned = assigned_to !== undefined ? assigned_to : checkTicket.rows[0].assigned_to;
 
     const updateQuery = `
       UPDATE tickets 
-      SET subject = $1, description = $2, category = $3, priority = $4, status = $5, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $6
+      SET subject = $1, description = $2, category = $3, priority = $4, status = $5, assigned_to = $6, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $7
       RETURNING *;
     `;
-    const values = [updatedSubject, updatedDescription, updatedCategory, updatedPriority, updatedStatus, id];
+    const values = [updatedSubject, updatedDescription, updatedCategory, updatedPriority, updatedStatus, updatedAssigned, id];
     const result = await pool.query(updateQuery, values);
+
+    // 3. SEAMLESS ENHANCEMENT: If status or assignment changed, inject a system automation history note
+    if (status || assigned_to) {
+      let logMessage = "System Log: Case files modified.";
+      if (status && assigned_to) {
+        logMessage = `System Log: Ticket ownership assigned and status escalated to ${status}.`;
+      } else if (status) {
+        logMessage = `System Log: Case progress tracking adjusted to ${status}.`;
+      }
+      
+      await pool.query('INSERT INTO notes (ticket_id, note) VALUES ($1, $2);', [id, logMessage]);
+    }
 
     res.status(200).json({
       message: 'Ticket updated successfully.',
-      ticket: result.rows
+      ticket: result.rows[0]
     });
   } catch (err) {
-    console.error('Error updating ticket:', err.message);
+    console.error('Error updating ticket parameters:', err.message);
     res.status(500).json({ error: 'Server error updating ticket data.' });
   }
 };
 
-// @desc    Delete a ticket permanently
+// @desc    Delete a ticket permanently (System Admin Permission Only)
 // @route   DELETE /tickets/:id
 const deleteTicket = async (req, res) => {
+  // Grab the request query context metadata to protect against unauthorized API requests
+  const { role } = req.query;
+
+  // STRICT ACCESS CONTROL SECURITY GATEWAY
+  if (role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Administrator privileges required to execute data purges.' });
+  }
+
   try {
     const { id } = req.params;
 
-    // Check if the target ticket actually exists first
     const checkTicket = await pool.query('SELECT * FROM tickets WHERE id = $1;', [id]);
     if (checkTicket.rows.length === 0) {
       return res.status(404).json({ error: `Ticket with ID ${id} was not found.` });
     }
 
-    // Perform the database deletion
     await pool.query('DELETE FROM tickets WHERE id = $1;', [id]);
 
     res.status(200).json({ message: `Ticket with ID ${id} has been permanently deleted.` });

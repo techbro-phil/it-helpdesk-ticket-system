@@ -10,6 +10,6 @@ export const fetchAllTickets = (userId, role) => API.get(`/tickets?user_id=${use
 export const fetchTicketById = (id) => API.get(`/tickets/${id}`);
 export const createNewTicket = (ticketData) => API.post('/tickets', ticketData);
 export const updateTicketDetails = (id, updatedData) => API.put(`/tickets/${id}`, updatedData);
-export const deleteTicketById = (id) => API.delete(`/tickets/${id}`);
+export const deleteTicketById = (id, role) => API.delete(`/tickets/${id}?role=${role}`);
 
 export default API;

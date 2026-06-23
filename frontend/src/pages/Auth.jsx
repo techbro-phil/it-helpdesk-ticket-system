@@ -18,7 +18,6 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
 
     const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
     
-    // Notice we do NOT send a role parameter anymore. The backend will enforce 'user' by default.
     const payload = isLoginMode 
       ? { email: formData.email, password: formData.password }
       : { name: formData.name, email: formData.email, password: formData.password };
@@ -31,7 +30,7 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         onLoginSuccess(response.data.user);
       } else {
-        setMessage('Account created successfully! Please switch to sign in mode.');
+        setMessage('Account created successfully. Please switch to authentication mode.');
         setFormData({ name: '', email: '', password: '' });
       }
     } catch (err) {
@@ -44,8 +43,8 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-[#F8FAFC] px-4 font-sans antialiased text-[#1E293B]">
       <div className="w-full max-w-[400px] bg-white p-8 rounded-2xl border border-slate-200 shadow-xl">
-        <h2 className="text-2xl font-black text-slate-800 text-center tracking-tight mb-4">
-          {isLoginMode ? ' Helpdesk Portal Login' : ' Create Operations Account'}
+        <h2 className="text-2xl font-bold text-slate-800 text-center tracking-tight mb-4">
+          {isLoginMode ? 'Authentication Gateway' : 'Account Registration'}
         </h2>
 
         <button
@@ -53,7 +52,7 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
           onClick={onCancelAuth}
           className="w-full mb-6 py-2 px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-xs rounded-xl transition-all active:scale-95"
         >
-          ← Cancel and Return to Homepage
+          Return to Homepage
         </button>
 
         {message && <div className="bg-emerald-50 text-[#22C55E] border border-emerald-100 p-3 rounded-xl text-center font-semibold text-xs mb-4">{message}</div>}
@@ -68,24 +67,24 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Corporate Email:</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Email:</label>
             <input type="email" name="email" value={formData.email} onChange={handleChange} style={inputStyle} required />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Secure Password:</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Password:</label>
             <input type="password" name="password" value={formData.password} onChange={handleChange} style={inputStyle} required />
           </div>
 
           <button type="submit" className="w-full bg-[#2563EB] hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-all active:scale-95 mt-2">
-            {isLoginMode ? 'Sign In' : 'Register Profile'}
+            {isLoginMode ? 'Authenticate' : 'Complete Registration'}
           </button>
         </form>
 
         <p className="text-center mt-6 text-slate-500 text-sm">
-          {isLoginMode ? "New to the department? " : "Already registered? "}
+          {isLoginMode ? "Require a portal account? " : "Existing account? "}
           <span onClick={() => { setIsLoginMode(!isLoginMode); setError(''); setMessage(''); }} className="text-[#2563EB] cursor-pointer font-bold hover:underline">
-            {isLoginMode ? 'Create an account' : 'Sign in here'}
+            {isLoginMode ? 'Register here' : 'Sign in here'}
           </span>
         </p>
       </div>

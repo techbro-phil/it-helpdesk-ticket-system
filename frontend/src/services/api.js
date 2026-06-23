@@ -2,8 +2,9 @@ import axios from 'axios';
 
 // Create a reusable Axios instance pointing directly to your Node/Express backend port
 const API = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'https://onrender.com',
 });
+
 
 // Reusable functions matching your backend endpoints
 export const fetchAllTickets = (userId, role) => API.get(`/tickets?user_id=${userId}&role=${role}`);

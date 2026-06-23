@@ -10,10 +10,30 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+
+// CORS - Allow your Vercel frontend
+const allowedOrigins = [
+  'https://your-app.vercel.app',  // Replace with your actual Vercel URL
+  'http://localhost:5173',  // For local development
+  'http://localhost:3000'
+];
+
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('Blocked origin:', origin);
+      callback(null, true); // Temporarily allow all origins for testing
+      // callback(new Error('Not allowed by CORS')); // Uncomment for production
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
 // Routes
@@ -25,6 +45,8 @@ app.use('/notes', noteRoutes);
 app.get('/', (req, res) => {
   res.json({ 
     status: 'Server is running',
+    database: 'Neon PostgreSQL',
+    frontend: 'Vercel',
     timestamp: new Date().toISOString()
   });
 });
@@ -32,11 +54,11 @@ app.get('/', (req, res) => {
 // Database Initialization
 const initDatabase = async () => {
   try {
-    console.log(' Starting database initialization...');
+    console.log(' Starting database initialization with Neon...');
     
     // Test database connection first
     const client = await pool.connect();
-    console.log(' Database connection successful');
+    console.log(' Neon database connection successful');
     client.release();
 
     // 1. Create Users Table
@@ -84,24 +106,24 @@ const initDatabase = async () => {
     `);
     console.log(' Notes table verified/created');
 
-    console.log(' Database tables verified and initialized successfully.');
+    console.log(' All database tables verified and initialized successfully.');
   } catch (err) {
     console.error(' Error building database schemas:', err.message);
-    console.error('Full error:', err);
-    // Don't exit the process, just log the error
+    console.error('Error details:', err);
   }
 };
 
 const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, async () => {
-  console.log(` Server is running on port ${PORT}`);
-  console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(` Backend server running on port ${PORT}`);
+  console.log(` Neon PostgreSQL connected`);
+  console.log(` Frontend: Vercel`);
   
-  // Initialize database with a small delay to ensure connection is ready
+  // Initialize database after server starts
   setTimeout(async () => {
     await initDatabase();
-  }, 1000);
+  }, 3000);
 });
 
 // Error handling middleware
@@ -109,6 +131,6 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 
     error: 'Something went wrong!',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
   });
 });

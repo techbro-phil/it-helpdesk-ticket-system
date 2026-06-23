@@ -9,7 +9,7 @@ const UserManagement = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/auth/users');
+      const response = await axios.get('https://onrender.com');
       setUsers(response.data);
     } catch (err) {
       setError('Failed to pull user records directories from server repositories.');
@@ -24,7 +24,7 @@ const UserManagement = () => {
 
   const handleRoleChange = async (userId, targetRole) => {
     try {
-      await axios.put(`http://localhost:3000/auth/users/${userId}/role`, { role: targetRole });
+      await axios.put(`https://onrender.com{userId}/role`, { role: targetRole });
       
       // Instantly update local react states array tracking arrays so display changes dynamically
       setUsers(users.map(user => user.id === userId ? { ...user, role: targetRole } : user));

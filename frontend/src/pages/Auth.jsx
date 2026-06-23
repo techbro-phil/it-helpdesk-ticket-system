@@ -23,8 +23,9 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
       : { name: formData.name, email: formData.email, password: formData.password };
 
     try {
-  // FIX: Change localhost:3000 directly to your live, running Render server link
-  const response = await axios.post(`https://onrender.com${endpoint}`, payload);
+
+  // FIX: Map the request straight to your specific, running Render instance API domain
+const response = await axios.post(`https://it-helpdesk-ticket-system-y9fs.onrender.com${endpoint}`, payload);
   
   if (isLoginMode) {
 

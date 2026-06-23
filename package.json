@@ -2,8 +2,12 @@
   "name": "it-helpdesk-system-root",
   "version": "1.0.0",
   "description": "IT Helpdesk Workspace Root Engine",
-  "scripts": {
-    "build": "cd frontend && npm run build"
-  },
-  "dependencies": {}
+    "scripts": {
+    "preinstall": "npx force-resolutions || echo 'Bypassing node dependency resolution constraints'",
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  }
+
 }

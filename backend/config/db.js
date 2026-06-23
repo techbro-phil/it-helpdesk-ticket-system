@@ -1,12 +1,16 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Ensure the pool reads directly from your Neon.tech cloud connection string link
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // This bypasses strict self-signed certificate constraints on hosted platforms
-  }
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+pool.on('connect', () => {
+  console.log('🐘 PostgreSQL connected successfully!');
 });
 
 module.exports = pool;

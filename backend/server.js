@@ -23,7 +23,7 @@ app.use('/notes', noteRoutes);
 // Clean Database Table Verification Engine
 const initDatabase = async () => {
   try {
-    // 1. Create Users Table
+    // 1. Create Users Table Architecture
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -35,7 +35,7 @@ const initDatabase = async () => {
       );
     `);
 
-    // 2. Create Tickets Table
+    // 2. Create Tickets Table Architecture
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tickets (
         id SERIAL PRIMARY KEY,
@@ -51,7 +51,7 @@ const initDatabase = async () => {
       );
     `);
 
-    // 3. Create Notes Table
+    // 3. Create Notes Table Architecture
     await pool.query(`
       CREATE TABLE IF NOT EXISTS notes (
         id SERIAL PRIMARY KEY,

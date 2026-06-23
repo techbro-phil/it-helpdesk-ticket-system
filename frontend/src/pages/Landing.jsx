@@ -27,8 +27,6 @@ const AnimatedCounter = ({ to }) => {
 };
 
 const Landing = ({ onNavigateToLogin }) => {
-  useState(0); // kept as-is (even though it's doing nothing, like most corporate tools)
-
   const [activeModal, setActiveModal] = useState(null);
 
   const fadeIn = {
@@ -43,15 +41,15 @@ const Landing = ({ onNavigateToLogin }) => {
   const modalContent = {
     Terms: {
       title: "Terms of Service",
-      text: "Welcome to HelpDeskPro. By accessing our incident tracking infrastructure, you agree to comply with corporate data compliance regulations. Unauthorized attempts to override access tiers, brute-force API tokens, or compromise backend PostgreSQL storage tables will result in immediate profile suspension and termination of organizational clearance handles."
+      text: "Welcome to Myhelpdesk. By accessing our incident tracking infrastructure, you agree to comply with corporate data compliance regulations. Unauthorized attempts to override access tiers, brute-force API tokens, or compromise backend PostgreSQL storage tables will result in immediate profile suspension and termination of organizational clearance handles."
     },
     Privacy: {
       title: "Privacy Policy",
-      text: "HelpDeskPro handles user data protection with absolute confidentiality. Corporate emails, profile roles, and technical log arrays are securely stored using cryptographic bcrypt hashing layers. We never exchange or stream internal operational logs to outside data networks. Session variables are recorded strictly inside temporary localStorage caches."
+      text: "Myhelpdesk handles user data protection with absolute confidentiality. Corporate emails, profile roles, and technical log arrays are securely stored using cryptographic bcrypt hashing layers. We never exchange or stream internal operational logs to outside data networks. Session variables are recorded strictly inside temporary localStorage caches."
     },
     Support: {
       title: "Customer Support Desk",
-      text: "Need administrative account clearance issues resolved? If you cannot access your portal workspace dashboard, find your network profile locked out, or need your role permissions upgraded to Technician or Admin status, please submit a physical report request form directly to our Global IT Administration office at support@helpdeskpro.com."
+      text: "Need administrative account clearance issues resolved? If you cannot access your portal workspace dashboard, find your network profile locked out, or need your role permissions upgraded to Technician or Admin status, please submit a physical report request form directly to our Global IT Administration office at support@myhelpdesk.com."
     }
   };
 
@@ -61,17 +59,19 @@ const Landing = ({ onNavigateToLogin }) => {
       {/* NAVBAR */}
       <nav className="fixed top-0 w-full z-40 backdrop-blur-xl bg-white/70 border-b border-slate-200/50 px-6 py-4">
         <div className="max-w-[1440px] mx-auto px-4 flex justify-between items-center">
-          <div className="text-2xl font-black tracking-tight">
-            HelpDesk<span className="text-indigo-600">Pro</span>
+          
+          {/* LOGO UPGRADE: Renders your custom image next to the new text name */}
+          <div className="flex items-center gap-3 font-black text-2xl tracking-tight text-slate-900">
+            <img src="/logo.png" alt="Myhelpdesk Logo" className="w-8 h-8 object-contain" />
+            <span>Myhelpdesk</span>
           </div>
 
           <button
-  onClick={onNavigateToLogin}
-  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-indigo-500/10 hover:scale-105 active:scale-95"
->
-  Access Portal
-</button>
-
+            onClick={onNavigateToLogin}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-indigo-500/10 hover:scale-105 active:scale-95"
+          >
+            Access Portal
+          </button>
         </div>
       </nav>
 
@@ -96,21 +96,20 @@ const Landing = ({ onNavigateToLogin }) => {
             </p>
 
             <div className="flex gap-4 flex-wrap pt-2">
-  <button
-    onClick={onNavigateToLogin}
-    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all active:scale-95"
-  >
-    Launch Dashboard
-  </button>
+              <button
+                onClick={onNavigateToLogin}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all active:scale-95"
+              >
+                Launch Dashboard
+              </button>
 
-  <button 
-    onClick={onNavigateToLogin}
-    className="border border-slate-200 bg-white text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 hover:bg-slate-50 active:scale-95"
-  >
-    File Support Request
-  </button>
-</div>
-
+              <button 
+                onClick={onNavigateToLogin}
+                className="border border-slate-200 bg-white text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 hover:bg-slate-50 active:scale-95"
+              >
+                File Support Request
+              </button>
+            </div>
           </motion.div>
 
           <motion.div
@@ -128,21 +127,23 @@ const Landing = ({ onNavigateToLogin }) => {
             <div className="p-6 space-y-5 font-mono text-sm text-white">
               <p className="text-emerald-400 font-bold">// system operational</p>
 
-              {[
-                ["#INC-2401", "Network outage detected", "CRITICAL"],
-                ["#INC-2402", "Printer queue stuck", "MEDIUM"],
-                ["#INC-2403", "Password reset request", "LOW"]
-              ].map(([id, text, level]) => (
-                <div key={id} className="bg-white text-slate-900 rounded-xl p-4 hover:scale-[1.02] transition-all shadow-sm">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-slate-500">{id}</span>
-                    <span className={level === "CRITICAL" ? "text-red-500" : "text-yellow-500"}>
-                      {level}
-                    </span>
+              <div className="space-y-3">
+                {[
+                  ["#INC-2401", "Network outage detected", "CRITICAL"],
+                  ["#INC-2402", "Printer queue stuck", "MEDIUM"],
+                  ["#INC-2403", "Password reset request", "LOW"]
+                ].map(([id, text, level]) => (
+                  <div key={id} className="bg-white text-slate-900 rounded-xl p-4 hover:scale-[1.02] transition-all shadow-sm">
+                    <div className="flex justify-between font-bold">
+                      <span className="text-slate-500">{id}</span>
+                      <span className={level === "CRITICAL" ? "text-red-500" : "text-yellow-500"}>
+                        {level}
+                      </span>
+                    </div>
+                    <p className="text-sm mt-1 font-sans font-medium text-slate-800">{text}</p>
                   </div>
-                  <p className="text-sm mt-1 font-sans font-medium text-slate-800">{text}</p>
-                </div>
-              ))}
+                ))}
+              </div>
 
               <p className="text-slate-400 font-bold">// awaiting technician allocation...</p>
             </div>
@@ -190,10 +191,10 @@ const Landing = ({ onNavigateToLogin }) => {
               key={t}
               whileHover="hover"
               variants={cardHover}
-              className="bg-white p-8 rounded-2xl border border-slate-200 shadow-md"
+              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all duration-300"
             >
-              <h3 className="font-bold text-xl mb-2">{t}</h3>
-              <p className="text-slate-600 text-sm">{d}</p>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">{t}</h3>
+              <p className="text-slate-600 leading-relaxed text-sm">{d}</p>
             </motion.div>
           ))}
         </div>

@@ -56,10 +56,10 @@ function App() {
       <aside className="fixed inset-y-0 left-0 z-20 w-64 bg-slate-900 text-slate-400 flex flex-col border-r border-slate-800 shadow-xl">
         {/* Sidebar Header Brand title */}
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-lg">H</div>
-          <span className="text-xl font-bold text-white tracking-tight">HelpDesk<span className="text-blue-500">Pro</span></span>
+  <img src="/logo.png" alt="Myhelpdesk Logo" className="w-8 h-8 object-contain" />
+  <span className="text-xl font-bold text-white tracking-tight">Myhelpdesk</span>
+</div>
 
-        </div>
 
         {/* Sidebar Links Menu lists mapping */}
         <nav className="flex-1 p-4 space-y-2 mt-4">

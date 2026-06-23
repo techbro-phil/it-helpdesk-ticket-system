@@ -23,9 +23,11 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
       : { name: formData.name, email: formData.email, password: formData.password };
 
     try {
-      const response = await axios.post(`http://localhost:3000${endpoint}`, payload);
-      
-      if (isLoginMode) {
+  // FIX: Change localhost:3000 directly to your live, running Render server link
+  const response = await axios.post(`https://onrender.com${endpoint}`, payload);
+  
+  if (isLoginMode) {
+
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         onLoginSuccess(response.data.user);

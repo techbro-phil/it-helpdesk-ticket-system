@@ -13,8 +13,8 @@ app.use(express.json());
 
 // CORS - Allow your Vercel frontend
 const allowedOrigins = [
-  'https://your-app.vercel.app',  // Replace with your actual Vercel URL
-  'http://localhost:5173',  // For local development
+  'https://it-helpdesk-ticket-system-go9u.vercel.app',  // your real Vercel URL
+  'http://localhost:5173',
   'http://localhost:3000'
 ];
 

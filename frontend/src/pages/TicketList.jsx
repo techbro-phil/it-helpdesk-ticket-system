@@ -76,7 +76,7 @@ const TicketList = ({ currentUser }) => {
     try {
       setSelectedTicket(ticket);
       setNewNote('');
-      const notesRes = await axios.get(`https://onrender.com{ticket.id}`);
+      const notesRes = await axios.get('https://it-helpdesk-ticket-system-89kz.onrender.com/auth/users');
       setNotes(notesRes.data);
     } catch (err) {
       console.error('Error fetching technician notes:', err.message);
@@ -89,7 +89,7 @@ const TicketList = ({ currentUser }) => {
     if (!newNote.trim()) return;
 
     try {
-      const response = await axios.post('https://onrender.com', {
+      const response = await axios.post('https://it-helpdesk-ticket-system-89kz.onrender.com/notes', {
         ticket_id: selectedTicket.id,
         note: newNote
       });

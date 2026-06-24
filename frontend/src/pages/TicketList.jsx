@@ -3,6 +3,8 @@ import { fetchAllTickets, deleteTicketById, updateTicketDetails } from '../servi
 import DashboardMetrics from '../components/DashboardMetrics';
 import axios from 'axios';
 
+const API = import.meta.env.VITE_API_URL;
+
 const TicketList = ({ currentUser }) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);

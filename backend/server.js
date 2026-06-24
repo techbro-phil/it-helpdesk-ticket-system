@@ -6,6 +6,12 @@ const ticketRoutes = require('./routes/ticketRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 require('dotenv').config();
 
+// Critical environment variable check
+if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
+  console.error(' Missing critical environment variables. Server refused to start.');
+  process.exit(1);
+}
+
 const app = express();
 
 // Middleware

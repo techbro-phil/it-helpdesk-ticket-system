@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { UserCheck, Shield, Users } from 'lucide-react';
+import API from '../services/api';
+import { Users } from 'lucide-react';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -9,7 +9,7 @@ const UserManagement = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await axios.get('https://onrender.com');
+      const response = await API.get('/auth/users');
       setUsers(response.data);
     } catch (err) {
       setError('Failed to pull user records directories from server repositories.');
@@ -24,9 +24,7 @@ const UserManagement = () => {
 
   const handleRoleChange = async (userId, targetRole) => {
     try {
-      await axios.put(`https://onrender.com{userId}/role`, { role: targetRole });
-      
-      // Instantly update local react states array tracking arrays so display changes dynamically
+      await API.put(`/auth/users/${userId}/role`, { role: targetRole });
       setUsers(users.map(user => user.id === userId ? { ...user, role: targetRole } : user));
       alert('Operational tier level status modified successfully!');
     } catch (err) {
@@ -76,8 +74,8 @@ const UserManagement = () => {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <select 
-                    value={user.role} 
+                  <select
+                    value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
                     className="p-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none bg-white shadow-sm focus:border-blue-500 cursor-pointer"
                   >

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import API from '../services/api';
 
 const Auth = ({ onLoginSuccess, onCancelAuth }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -25,7 +25,7 @@ const Auth = ({ onLoginSuccess, onCancelAuth }) => {
     try {
 
   // FIX: Map the request straight to your specific, running Render instance API domain
-const response = await axios.post(`https://it-helpdesk-ticket-system-y9fs.onrender.com${endpoint}`, payload);
+    const response = await API.post(endpoint, payload);
   
   if (isLoginMode) {
 

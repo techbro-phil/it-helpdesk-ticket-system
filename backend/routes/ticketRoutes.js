@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { createTicket, getTickets, getTicketById, updateTicket, deleteTicket } = require('../controllers/ticketController');
+const { protect, adminOnly, technicianOrAdmin } = require('../middleware/authMiddleware');
 
-// Map methods to our controller functions
-router.post('/', createTicket);
-router.get('/', getTickets);
-router.get('/:id', getTicketById);
-router.put('/:id', updateTicket);
-router.delete('/:id', deleteTicket); // <-- Maps DELETE /tickets/123 to our function
+router.post('/', protect, createTicket);                        // Any logged in user can create
+router.get('/', protect, getTickets);                          // Any logged in user can view
+router.get('/:id', protect, getTicketById);                    // Any logged in user can view single
+router.put('/:id', protect, technicianOrAdmin, updateTicket);  // Only technician or admin can update
+router.delete('/:id', protect, adminOnly, deleteTicket);       // Only admin can delete
 
 module.exports = router;

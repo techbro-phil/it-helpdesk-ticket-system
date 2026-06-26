@@ -1,10 +1,16 @@
 ﻿const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getAllUsers, updateUserRole } = require('../controllers/authController');
+const { 
+  registerUser, 
+  loginUser, 
+  getAllUsers, 
+  updateUserRole,
+  forgotPassword,
+  resetPassword
+} = require('../controllers/authController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const rateLimit = require('express-rate-limit');
 
-// Rate limiter — max 10 attempts per 15 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -15,6 +21,8 @@ const authLimiter = rateLimit({
 
 router.post('/register', authLimiter, registerUser);
 router.post('/login', authLimiter, loginUser);
+router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/reset-password', resetPassword);
 router.get('/users', protect, adminOnly, getAllUsers);
 router.put('/users/:id/role', protect, adminOnly, updateUserRole);
 

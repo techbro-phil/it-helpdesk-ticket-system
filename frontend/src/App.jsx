@@ -11,7 +11,7 @@ import ResetPassword from './pages/ResetPassword';
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(false); // false | true | 'forgot'
   const [activeTab, setActiveTab] = useState('Dashboard');
 
   useEffect(() => {
@@ -31,51 +31,53 @@ function App() {
   if (loading) return <p style={{ textAlign: 'center', marginTop: '50px' }}>Verifying system session...</p>;
 
   if (!currentUser) {
-  // Handle reset password link from email
-  if (window.location.search.includes('token=')) {
-    return (
-      <>
-        <Toaster position="top-right" />
-        <ResetPassword onBackToLogin={() => {
-          window.history.pushState({}, '', '/');
-          setShowLogin(true);
-        }} />
-      </>
-    );
-  }
+    // 1. Handle reset password link from email
+    if (window.location.search.includes('token=')) {
+      return (
+        <>
+          <Toaster position="top-right" />
+          <ResetPassword onBackToLogin={() => {
+            window.history.pushState({}, '', '/');
+            setShowLogin(true);
+          }} />
+        </>
+      );
+    }
 
-  if (showLogin) {
-    return (
-      <>
-        <Toaster position="top-right" />
-        <Auth
-          onLoginSuccess={(user) => {
-            setCurrentUser(user);
-            setShowLogin(false);
-          }}
-          onCancelAuth={() => setShowLogin(false)}
-          onForgotPassword={() => setShowLogin('forgot')}
-        />
-      </>
-    );
-  }
+    // 2. Show forgot password page — MUST come before showLogin truthy check
+    if (showLogin === 'forgot') {
+      return (
+        <>
+          <Toaster position="top-right" />
+          <ForgotPassword onBackToLogin={() => setShowLogin(true)} />
+        </>
+      );
+    }
 
-  if (showLogin === 'forgot') {
-    return (
-      <>
-        <Toaster position="top-right" />
-        <ForgotPassword onBackToLogin={() => setShowLogin(true)} />
-      </>
-    );
-  }
+    // 3. Show login/register page
+    if (showLogin) {
+      return (
+        <>
+          <Toaster position="top-right" />
+          <Auth
+            onLoginSuccess={(user) => {
+              setCurrentUser(user);
+              setShowLogin(false);
+            }}
+            onCancelAuth={() => setShowLogin(false)}
+            onForgotPassword={() => setShowLogin('forgot')}
+          />
+        </>
+      );
+    }
 
-  return <Landing onNavigateToLogin={() => setShowLogin(true)} />;
-}
+    // 4. Show landing page
+    return <Landing onNavigateToLogin={() => setShowLogin(true)} />;
+  }
 
   return (
     <div className="flex w-full min-h-screen bg-[#F8FAFC] font-sans antialiased text-[#1E293B]">
       
-      {/* Toast Notification Container */}
       <Toaster 
         position="top-right"
         toastOptions={{

@@ -3,6 +3,7 @@ import { fetchAllTickets, deleteTicketById, updateTicketDetails } from '../servi
 import DashboardMetrics from '../components/DashboardMetrics';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import DashboardCharts from '../components/DashboardCharts';
 
 const TicketList = ({ currentUser }) => {
   const [tickets, setTickets] = useState([]);
@@ -156,6 +157,7 @@ const TicketList = ({ currentUser }) => {
     <div className="w-full mx-auto font-sans antialiased text-[#1E293B]">
 
       <DashboardMetrics tickets={tickets} />
+      <DashboardCharts tickets={tickets} />
 
       {/* OPERATIONS QUEUE TABLE */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-md mb-8">

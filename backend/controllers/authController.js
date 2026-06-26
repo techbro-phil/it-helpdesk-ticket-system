@@ -4,6 +4,20 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
+// Email transporter — using port 587 to avoid connection timeout
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
 // @desc    Register a new user profile
 // @route   POST /auth/register
 const registerUser = async (req, res) => {
@@ -125,7 +139,6 @@ const forgotPassword = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1;', [email]);
     if (result.rows.length === 0) {
-      // Don't reveal if email exists or not for security
       return res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
     }
 
@@ -133,25 +146,18 @@ const forgotPassword = async (req, res) => {
 
     // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Save token to database
     await pool.query(
       'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3;',
       [resetToken, resetExpires, user.id]
     );
 
-    // Build reset URL
     const resetURL = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-    // Send email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    // Verify transporter before sending
+    await transporter.verify();
+    console.log(' SMTP connection verified');
 
     await transporter.sendMail({
       from: `"IT HelpDesk System" <${process.env.EMAIL_USER}>`,
@@ -170,9 +176,10 @@ const forgotPassword = async (req, res) => {
       `,
     });
 
+    console.log(` Reset email sent to ${user.email}`);
     res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
   } catch (err) {
-    console.error('Forgot password error:', err.message);
+    console.error(' Forgot password error:', err.message);
     res.status(500).json({ error: 'Server error sending reset email.' });
   }
 };
@@ -187,7 +194,6 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    // Find user with valid token that hasn't expired
     const result = await pool.query(
       'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW();',
       [token]
@@ -198,12 +204,9 @@ const resetPassword = async (req, res) => {
     }
 
     const user = result.rows[0];
-
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Update password and clear reset token
     await pool.query(
       'UPDATE users SET password = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2;',
       [hashedPassword, user.id]
@@ -211,7 +214,7 @@ const resetPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
   } catch (err) {
-    console.error('Reset password error:', err.message);
+    console.error(' Reset password error:', err.message);
     res.status(500).json({ error: 'Server error resetting password.' });
   }
 };

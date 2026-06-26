@@ -14,28 +14,29 @@ if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
 
 const app = express();
 
+// Required for rate limiting behind Render/Cloudflare proxy
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 
-// CORS - Allow your Vercel frontend
+// CORS
 const allowedOrigins = [
   'https://it-helpdesk-ticket-system-go9u.vercel.app',
   'https://it-helpdesk-ticket-system-go9u-git-master-tech-phil.vercel.app',
+  'https://it-helpdesk-ticket-system-go9u-tech-phil.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000'
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log('Blocked origin:', origin);
-      callback(null, true); // Temporarily allow all origins for testing
-      // callback(new Error('Not allowed by CORS')); // Uncomment for production
+      callback(null, true); // Allow all for now — remove in strict production
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -48,7 +49,7 @@ app.use('/auth', authRoutes);
 app.use('/tickets', ticketRoutes);
 app.use('/notes', noteRoutes);
 
-// Health check endpoint
+// Health check
 app.get('/', (req, res) => {
   res.json({ 
     status: 'Server is running',
@@ -63,12 +64,10 @@ const initDatabase = async () => {
   try {
     console.log(' Starting database initialization with Neon...');
     
-    // Test database connection first
     const client = await pool.connect();
     console.log(' Neon database connection successful');
     client.release();
 
-    // 1. Create Users Table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -76,12 +75,13 @@ const initDatabase = async () => {
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
+        reset_token VARCHAR(255),
+        reset_token_expires TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log(' Users table verified/created');
 
-    // 2. Create Tickets Table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tickets (
         id SERIAL PRIMARY KEY,
@@ -99,7 +99,6 @@ const initDatabase = async () => {
     `);
     console.log(' Tickets table verified/created');
 
-    // 3. Create Notes Table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS notes (
         id SERIAL PRIMARY KEY,
@@ -127,7 +126,6 @@ app.listen(PORT, async () => {
   console.log(` Neon PostgreSQL connected`);
   console.log(` Frontend: Vercel`);
   
-  // Initialize database after server starts
   setTimeout(async () => {
     await initDatabase();
   }, 3000);

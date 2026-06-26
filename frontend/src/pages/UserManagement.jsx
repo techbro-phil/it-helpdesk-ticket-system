@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
+import toast from 'react-hot-toast';
 import { Users } from 'lucide-react';
 
 const UserManagement = () => {
@@ -26,9 +27,9 @@ const UserManagement = () => {
     try {
       await API.put(`/auth/users/${userId}/role`, { role: targetRole });
       setUsers(users.map(user => user.id === userId ? { ...user, role: targetRole } : user));
-      alert('Operational tier level status modified successfully!');
+      toast.success('Operational tier level status modified successfully!');
     } catch (err) {
-      alert('Error updating user authority credentials.');
+      toast.error('Error updating user authority credentials.');
     }
   };
 

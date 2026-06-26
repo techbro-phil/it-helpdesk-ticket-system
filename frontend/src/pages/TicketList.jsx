@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAllTickets, deleteTicketById, updateTicketDetails } from '../services/api';
 import DashboardMetrics from '../components/DashboardMetrics';
-import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL;
+import API from '../services/api';
+import toast from 'react-hot-toast';
 
 const TicketList = ({ currentUser }) => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
-  // State for Managing the Active Case Details View
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState('');
 
-  // Load the Dashboard Queue with permission parameters
   const loadTickets = async () => {
     try {
       const response = await fetchAllTickets(currentUser.id, currentUser.role);
@@ -38,8 +34,9 @@ const TicketList = ({ currentUser }) => {
         await deleteTicketById(id, currentUser.role);
         setTickets(tickets.filter(t => t.id !== id));
         if (selectedTicket?.id === id) setSelectedTicket(null);
+        toast.success(`Ticket #${id} permanently deleted.`);
       } catch (err) {
-        alert(err.response?.data?.error || 'Error executing data deletion.');
+        toast.error(err.response?.data?.error || 'Error executing data deletion.');
       }
     }
   };
@@ -51,34 +48,32 @@ const TicketList = ({ currentUser }) => {
         status: 'In Progress',
         assigned_to: currentUser.id
       });
-      alert('Ticket successfully assigned to your workspace profile.');
-      loadTickets(); // Refresh data layout
+      toast.success('Ticket successfully assigned to your workspace profile.');
+      loadTickets();
       if (selectedTicket?.id === ticketId) setSelectedTicket(null);
     } catch (err) {
-      alert('Failed to complete ticket assignment.');
+      toast.error('Failed to complete ticket assignment.');
     }
   };
 
   // Handle Technician Resolving an Active Ticket
   const handleResolveTicket = async (ticketId) => {
     try {
-      await updateTicketDetails(ticketId, {
-        status: 'Resolved'
-      });
-      alert('Ticket successfully marked as resolved.');
-      loadTickets(); // Refresh data layout
+      await updateTicketDetails(ticketId, { status: 'Resolved' });
+      toast.success('Ticket successfully marked as resolved.');
+      loadTickets();
       if (selectedTicket?.id === ticketId) setSelectedTicket(null);
     } catch (err) {
-      alert('Failed to update ticket status.');
+      toast.error('Failed to update ticket status.');
     }
   };
 
-  // Handle Opening Ticket Details & Fetching its Tech Notes
+  // Handle Opening Ticket Details & Fetching its Notes
   const handleViewDetails = async (ticket) => {
     try {
       setSelectedTicket(ticket);
       setNewNote('');
-      const notesRes = await axios.get('https://it-helpdesk-ticket-system-89kz.onrender.com/auth/users');
+      const notesRes = await API.get(`/notes/ticket/${ticket.id}`);
       setNotes(notesRes.data);
     } catch (err) {
       console.error('Error fetching technician notes:', err.message);
@@ -91,19 +86,18 @@ const TicketList = ({ currentUser }) => {
     if (!newNote.trim()) return;
 
     try {
-      const response = await axios.post('https://it-helpdesk-ticket-system-89kz.onrender.com/notes', {
+      const response = await API.post('/notes', {
         ticket_id: selectedTicket.id,
         note: newNote
       });
-      
       setNotes([response.data.note, ...notes]);
       setNewNote('');
+      toast.success('Note saved successfully.');
     } catch (err) {
-      alert('Failed to save technician note.');
+      toast.error('Failed to save technician note.');
     }
   };
 
-  // Priority badge styling color mapper
   const getPriorityStyle = (priority) => {
     switch (priority) {
       case 'Critical': return { color: '#d9534f', backgroundColor: '#fdf7f7', border: '1px solid #d9534f' };
@@ -118,10 +112,9 @@ const TicketList = ({ currentUser }) => {
 
   return (
     <div className="w-full mx-auto font-sans antialiased text-[#1E293B]">
-      
-      {/* Metrics Section */}
+
       <DashboardMetrics tickets={tickets} />
-      
+
       {/* OPERATIONS QUEUE TABLE */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-md mb-8">
         <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
@@ -130,7 +123,7 @@ const TicketList = ({ currentUser }) => {
             {tickets.length} Registered
           </span>
         </div>
-        
+
         {tickets.length === 0 ? (
           <p className="text-center text-slate-500 py-6">No support incidents registered in the workspace system queue.</p>
         ) : (
@@ -175,7 +168,6 @@ const TicketList = ({ currentUser }) => {
                         View Details
                       </button>
 
-                      {/* TECHNICIAN WORKFLOW OPTIONS */}
                       {(currentUser.role === 'technician' || currentUser.role === 'admin') && (
                         <>
                           {ticket.status === 'Open' && (
@@ -190,8 +182,7 @@ const TicketList = ({ currentUser }) => {
                           )}
                         </>
                       )}
-                      
-                      {/* ADMIN EXCLUSIVE PURGE PARAMETER */}
+
                       {currentUser?.role === 'admin' && (
                         <button onClick={() => handleDelete(ticket.id)} className="bg-red-500 hover:bg-red-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
                           Delete
@@ -208,40 +199,34 @@ const TicketList = ({ currentUser }) => {
 
       {/* DYNAMIC CASE DETAILS PANEL */}
       {selectedTicket && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg animate-fade-in">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-            <h3 className="text-lg font-bold text-slate-900">Case Investigation: {selectedTicket.subject} <span className="text-slate-400">#{selectedTicket.id}</span></h3>
+            <h3 className="text-lg font-bold text-slate-900">
+              Case Investigation: {selectedTicket.subject} <span className="text-slate-400">#{selectedTicket.id}</span>
+            </h3>
             <button onClick={() => setSelectedTicket(null)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
           </div>
-          
-          <p className="color-slate-700 bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 text-sm leading-relaxed mb-6">
+
+          <p className="bg-slate-50 p-4 rounded-xl border-l-4 border-blue-600 text-sm leading-relaxed mb-6 text-slate-700">
             <strong>Description:</strong> {selectedTicket.description}
           </p>
 
-
-          {/* TROUBLESHOOTING LOG NOTES LIST */}
           <div className="mb-6">
             <h4 className="text-md font-bold text-slate-800 mb-3">Internal Activity Logs</h4>
-
             {notes.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                No internal engineering modifications recorded for this file index.
-              </p>
+              <p className="text-sm text-slate-500">No internal engineering modifications recorded for this file index.</p>
             ) : (
               <div className="space-y-3">
                 {notes.map((n, index) => (
                   <div key={index} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm">
                     <p>{n.note}</p>
-                    <p className="text-xs text-slate-400 mt-2">
-                      Logged: {new Date(n.created_at).toLocaleString()}
-                    </p>
+                    <p className="text-xs text-slate-400 mt-2">Logged: {new Date(n.created_at).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* ROLE CHECK: ACCESS CONTROL NOTE FORMS */}
           {(currentUser?.role === 'technician' || currentUser?.role === 'admin') ? (
             <form onSubmit={handleAddNote} className="flex gap-3 items-center">
               <input
@@ -252,11 +237,7 @@ const TicketList = ({ currentUser }) => {
                 className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 text-slate-800 placeholder-slate-400"
                 required
               />
-
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm font-bold"
-              >
+              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm font-bold">
                 Save Log
               </button>
             </form>

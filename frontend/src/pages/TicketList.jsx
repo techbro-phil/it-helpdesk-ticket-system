@@ -19,6 +19,10 @@ const TicketList = ({ currentUser }) => {
   const [filterPriority, setFilterPriority] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 10;
+
   const loadTickets = async () => {
     try {
       const response = await fetchAllTickets(currentUser.id, currentUser.role);
@@ -48,26 +52,27 @@ const TicketList = ({ currentUser }) => {
       );
     }
 
-    if (filterStatus !== 'All') {
-      results = results.filter(t => t.status === filterStatus);
-    }
-
-    if (filterPriority !== 'All') {
-      results = results.filter(t => t.priority === filterPriority);
-    }
-
-    if (filterCategory !== 'All') {
-      results = results.filter(t => t.category === filterCategory);
-    }
+    if (filterStatus !== 'All') results = results.filter(t => t.status === filterStatus);
+    if (filterPriority !== 'All') results = results.filter(t => t.priority === filterPriority);
+    if (filterCategory !== 'All') results = results.filter(t => t.category === filterCategory);
 
     setFiltered(results);
+    setCurrentPage(1); // Reset to page 1 on filter change
   }, [search, filterStatus, filterPriority, filterCategory, tickets]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filtered.length / ticketsPerPage);
+  const paginatedTickets = filtered.slice(
+    (currentPage - 1) * ticketsPerPage,
+    currentPage * ticketsPerPage
+  );
 
   const clearFilters = () => {
     setSearch('');
     setFilterStatus('All');
     setFilterPriority('All');
     setFilterCategory('All');
+    setCurrentPage(1);
   };
 
   const handleDelete = async (id) => {
@@ -163,7 +168,6 @@ const TicketList = ({ currentUser }) => {
 
         {/* SEARCH AND FILTER BAR */}
         <div className="flex flex-wrap gap-3 mb-6">
-          {/* Search Input */}
           <input
             type="text"
             value={search}
@@ -171,8 +175,6 @@ const TicketList = ({ currentUser }) => {
             placeholder="Search by ID, subject, or description..."
             className="flex-1 min-w-[200px] p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 text-slate-800 placeholder-slate-400"
           />
-
-          {/* Status Filter */}
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -183,8 +185,6 @@ const TicketList = ({ currentUser }) => {
             <option value="In Progress">In Progress</option>
             <option value="Resolved">Resolved</option>
           </select>
-
-          {/* Priority Filter */}
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
@@ -196,8 +196,6 @@ const TicketList = ({ currentUser }) => {
             <option value="High">High</option>
             <option value="Critical">Critical</option>
           </select>
-
-          {/* Category Filter */}
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
@@ -210,8 +208,6 @@ const TicketList = ({ currentUser }) => {
             <option value="Account Access">Account Access</option>
             <option value="Other">Other</option>
           </select>
-
-          {/* Clear Filters Button */}
           {(search || filterStatus !== 'All' || filterPriority !== 'All' || filterCategory !== 'All') && (
             <button
               onClick={clearFilters}
@@ -224,78 +220,126 @@ const TicketList = ({ currentUser }) => {
 
         {filtered.length === 0 ? (
           <p className="text-center text-slate-500 py-6">
-            {tickets.length === 0 
-              ? 'No support incidents registered in the workspace system queue.' 
+            {tickets.length === 0
+              ? 'No support incidents registered in the workspace system queue.'
               : 'No tickets match your current filters.'}
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase font-bold tracking-wider">
-                  <th className="p-4">ID</th>
-                  <th className="p-4">Subject Summary</th>
-                  <th className="p-4">Classification</th>
-                  <th className="p-4">Urgency</th>
-                  <th className="p-4">Assigned To</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((ticket, index) => (
-                  <tr key={ticket.id} className={`border-b border-slate-100 text-sm ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                    <td className="p-4 font-bold text-slate-400">#{ticket.id}</td>
-                    <td className="p-4 font-semibold text-slate-800">{ticket.subject}</td>
-                    <td className="p-4">
-                      <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-md text-xs font-semibold">{ticket.category}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="px-3 py-1 rounded-md text-xs font-bold" style={getPriorityStyle(ticket.priority)}>{ticket.priority}</span>
-                    </td>
-                    <td className="p-4 font-medium text-slate-600">
-                      {ticket.assigned_to ? `Tech #${ticket.assigned_to}` : 'Unassigned'}
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-3 py-1 rounded-md text-xs font-bold uppercase ${
-                        ticket.status === 'Open' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
-                        ticket.status === 'In Progress' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
-                        'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                      }`}>
-                        {ticket.status}
-                      </span>
-                    </td>
-                    <td className="p-4 flex justify-center items-center gap-2">
-                      <button onClick={() => handleViewDetails(ticket)} className="bg-blue-600 hover:bg-blue-700 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
-                        View
-                      </button>
-
-                      {(currentUser.role === 'technician' || currentUser.role === 'admin') && (
-                        <>
-                          {ticket.status === 'Open' && (
-                            <button onClick={() => handleClaimTicket(ticket.id)} className="bg-amber-500 hover:bg-amber-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
-                              Claim
-                            </button>
-                          )}
-                          {ticket.status === 'In Progress' && ticket.assigned_to === currentUser.id && (
-                            <button onClick={() => handleResolveTicket(ticket.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
-                              Resolve
-                            </button>
-                          )}
-                        </>
-                      )}
-
-                      {currentUser?.role === 'admin' && (
-                        <button onClick={() => handleDelete(ticket.id)} className="bg-red-500 hover:bg-red-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
-                          Delete
-                        </button>
-                      )}
-                    </td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase font-bold tracking-wider">
+                    <th className="p-4">ID</th>
+                    <th className="p-4">Subject Summary</th>
+                    <th className="p-4">Classification</th>
+                    <th className="p-4">Urgency</th>
+                    <th className="p-4">Assigned To</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-center">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {paginatedTickets.map((ticket, index) => (
+                    <tr key={ticket.id} className={`border-b border-slate-100 text-sm ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                      <td className="p-4 font-bold text-slate-400">#{ticket.id}</td>
+                      <td className="p-4 font-semibold text-slate-800">{ticket.subject}</td>
+                      <td className="p-4">
+                        <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-md text-xs font-semibold">{ticket.category}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="px-3 py-1 rounded-md text-xs font-bold" style={getPriorityStyle(ticket.priority)}>{ticket.priority}</span>
+                      </td>
+                      <td className="p-4 font-medium text-slate-600">
+                        {ticket.assigned_to ? `Tech #${ticket.assigned_to}` : 'Unassigned'}
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-3 py-1 rounded-md text-xs font-bold uppercase ${
+                          ticket.status === 'Open' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
+                          ticket.status === 'In Progress' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                          'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                        }`}>
+                          {ticket.status}
+                        </span>
+                      </td>
+                      <td className="p-4 flex justify-center items-center gap-2">
+                        <button onClick={() => handleViewDetails(ticket)} className="bg-blue-600 hover:bg-blue-700 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
+                          View
+                        </button>
+                        {(currentUser.role === 'technician' || currentUser.role === 'admin') && (
+                          <>
+                            {ticket.status === 'Open' && (
+                              <button onClick={() => handleClaimTicket(ticket.id)} className="bg-amber-500 hover:bg-amber-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
+                                Claim
+                              </button>
+                            )}
+                            {ticket.status === 'In Progress' && ticket.assigned_to === currentUser.id && (
+                              <button onClick={() => handleResolveTicket(ticket.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
+                                Resolve
+                              </button>
+                            )}
+                          </>
+                        )}
+                        {currentUser?.role === 'admin' && (
+                          <button onClick={() => handleDelete(ticket.id)} className="bg-red-500 hover:bg-red-600 text-white border-none px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* PAGINATION CONTROLS */}
+            {totalPages > 1 && (
+              <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-500 font-medium">
+                  Showing {((currentPage - 1) * ticketsPerPage) + 1}–{Math.min(currentPage * ticketsPerPage, filtered.length)} of {filtered.length} tickets
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      currentPage === 1
+                        ? 'border-slate-100 text-slate-300 cursor-not-allowed'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    ← Previous
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      currentPage === totalPages
+                        ? 'border-slate-100 text-slate-300 cursor-not-allowed'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

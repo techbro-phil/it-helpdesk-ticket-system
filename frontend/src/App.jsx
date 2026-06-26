@@ -5,6 +5,8 @@ import TicketList from './pages/TicketList';
 import Auth from './pages/Auth';
 import Landing from './pages/Landing'; 
 import UserManagement from './pages/UserManagement';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -29,22 +31,46 @@ function App() {
   if (loading) return <p style={{ textAlign: 'center', marginTop: '50px' }}>Verifying system session...</p>;
 
   if (!currentUser) {
-    if (showLogin) {
-      return (
-        <>
-          <Toaster position="top-right" />
-          <Auth 
-            onLoginSuccess={(user) => { 
-              setCurrentUser(user); 
-              setShowLogin(false); 
-            }} 
-            onCancelAuth={() => setShowLogin(false)}
-          />
-        </>
-      );
-    }
-    return <Landing onNavigateToLogin={() => setShowLogin(true)} />;
+  // Handle reset password link from email
+  if (window.location.search.includes('token=')) {
+    return (
+      <>
+        <Toaster position="top-right" />
+        <ResetPassword onBackToLogin={() => {
+          window.history.pushState({}, '', '/');
+          setShowLogin(true);
+        }} />
+      </>
+    );
   }
+
+  if (showLogin) {
+    return (
+      <>
+        <Toaster position="top-right" />
+        <Auth
+          onLoginSuccess={(user) => {
+            setCurrentUser(user);
+            setShowLogin(false);
+          }}
+          onCancelAuth={() => setShowLogin(false)}
+          onForgotPassword={() => setShowLogin('forgot')}
+        />
+      </>
+    );
+  }
+
+  if (showLogin === 'forgot') {
+    return (
+      <>
+        <Toaster position="top-right" />
+        <ForgotPassword onBackToLogin={() => setShowLogin(true)} />
+      </>
+    );
+  }
+
+  return <Landing onNavigateToLogin={() => setShowLogin(true)} />;
+}
 
   return (
     <div className="flex w-full min-h-screen bg-[#F8FAFC] font-sans antialiased text-[#1E293B]">
